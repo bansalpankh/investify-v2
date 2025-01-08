@@ -47,39 +47,6 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 io.engine.use(sessionMiddleware);
 
-// const roomBuyArrays = {};
-// const roomSellArrays = {};
-// io.on('connection', (socket) => {
-//   const session = socket.request.session;
-//   console.log('User Connected on Investify');
-//   socket.on('joinSharedRoom', (shareName) => {
-//     socket.join(shareName);
-//     console.log(`user joined ${shareName} shared Room`);
-//     roomBuyArrays[shareName] = roomBuyArrays[shareName] || [];
-//     roomSellArrays[shareName] = roomSellArrays[shareName] || [];
-//     socket.emit('roomArray', roomBuyArrays[shareName]);
-//     socket.emit('roomArray', roomSellArrays[shareName]);
-//   });
-//   socket.on('buyOrder', (order) => {
-//     if (session && session.userId) {
-//       order.userID = session.userId;
-//       roomBuyArrays[order.shareName].push(order);
-//       console.log(roomBuyArrays);
-//     } else {
-//       console.error("userId is undefined in session for buyOrder");
-//     }
-//   });
-//   socket.on('sellOrder', (order) => {
-//     if (session && session.userId) {
-//       order.userID = session.userId;
-//       roomSellArrays[order.shareName].push(order);
-//       console.log(roomSellArrays[order.shareName]);
-//     } else {
-//       console.error("userId is undefined in session for sellOrder");
-//     }
-//   });
-// });
-
 const Orderbook = new OrderBook();
 io.on('connection', (socket)=>{
   const session = socket.request.session;
