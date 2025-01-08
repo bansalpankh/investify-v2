@@ -11,8 +11,8 @@ export async function findUser(email){
     const collection = Database.collection('users');
     const user = await collection.findOne({userId : email});
     if (user){
-        return user;
+      return user;
     }else{
-        return false;
+      return false;
     }
 }

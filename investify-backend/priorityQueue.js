@@ -1,6 +1,3 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-dotenv.config();
 class PriorityQueue {
     constructor(comparator) {
         this.items = [];
@@ -68,61 +65,36 @@ class PriorityQueue {
     }
 }
 
-export class OrderBook {
+export default class OrderBook {
     constructor() {
         this.sellBook = new PriorityQueue((a, b) => a.price - b.price);
         this.buyBook = new PriorityQueue((a, b) => b.price - a.price);
-        this.weightedAverageData = {};
-        this.db = mysql.createPool({
-            host: 'localhost',
-            user: 'root',
-            password: process.env.MYSQL_PASSWORD,
-            database: process.env.Stocks
-        });
-        setInterval(() => this.updateWeightedAverage(), 60000);
     }
-    async addIntoSellBook(price, qty, shareName, userID) {
+    addSellOrder(price, qty, shareName, userID) {
         const order = { price, qty, share: shareName, time: new Date(), userID };
         this.sellBook.enqueue(order);
-        await this.saveOrderToDB('sell', order);
-        this.updateWeightedAverageData(shareName, price, qty);
+        this.matchOrders();
     }
-    async addIntoBuyBook(price, qty, shareName, userID) {
+    addBuyOrder(price, qty, shareName, userID) {
         const order = { price, qty, share: shareName, time: new Date(), userID };
         this.buyBook.enqueue(order);
-        await this.saveOrderToDB('buy', order);
-        this.updateWeightedAverageData(shareName, price, qty);
+        this.matchOrders();
     }
-    async saveOrderToDB(orderType, { price, qty, share, time, userID }) {
-        const query = `INSERT INTO orders (type, price, qty, share_name, order_time, user_id) VALUES (?, ?, ?, ?, ?, ?)`;
-        const values = [orderType, price, qty, share, time, userID];
-        await this.db.execute(query, values);
-    }
-    updateWeightedAverageData(shareName, price, qty) {
-        if (!this.weightedAverageData[shareName]) {
-            this.weightedAverageData[shareName] = { totalVolume: 0, totalValue: 0, weightedAvgPrice: 0 };
-        }
-        const shareData = this.weightedAverageData[shareName];
-        shareData.totalVolume += qty;
-        shareData.totalValue += price * qty;
-    }
-    async updateWeightedAverage() {
-        const date = new Date().toISOString().split('T')[0];
-        const timeIndex = new Date().getMinutes();
-        for (const [shareName, { totalVolume, totalValue }] of Object.entries(this.weightedAverageData)) {
-            if (totalVolume > 0) {
-                const weightedAvgPrice = totalValue / totalVolume;
-                this.weightedAverageData[shareName].weightedAvgPrice = weightedAvgPrice;
-                await this.updatePriceInDatabase(shareName, date, timeIndex, weightedAvgPrice);
-                this.weightedAverageData[shareName].totalVolume = 0;
-                this.weightedAverageData[shareName].totalValue = 0;
-            }
+    matchOrders() {
+        while (!this.sellBook.isEmpty() && !this.buyBook.isEmpty() && this.buyBook.peek().price >= this.sellBook.peek().price) {
+            const sellOrder = this.sellBook.dequeue();
+            const buyOrder = this.buyBook.dequeue();
+            const matchedQty = Math.min(sellOrder.qty, buyOrder.qty);
+            const matchedPrice = sellOrder.price;
+            sellOrder.qty -= matchedQty;
+            buyOrder.qty -= matchedQty;
+            console.log(`Matched ${matchedQty} shares of ${sellOrder.share} at price ${matchedPrice}`);
+            if (sellOrder.qty > 0) this.sellBook.enqueue(sellOrder);
+            if (buyOrder.qty > 0) this.buyBook.enqueue(buyOrder);
         }
     }
-    async updatePriceInDatabase(shareName, date, timeIndex, price) {
-        const field = `time_${timeIndex}`;
-        const query = `INSERT INTO weighted_averages (shareName, date, ${field})VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ${field} = VALUES(${field})`;
-        const values = [shareName, date, price];
-        await this.db.execute(query, values);
+    getCurrentMarketValue(shareName) {
+        const lowestSellOrder = this.sellBook.items.find(order => order.share === shareName);
+        return lowestSellOrder ? lowestSellOrder.price : null;
     }
 }
