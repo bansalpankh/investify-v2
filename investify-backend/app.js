@@ -178,6 +178,10 @@ app.get('/api/invest/equity', authetication, async (req, res) => {
   }
 });
 
+app.get('/api/invest/equity/getDetails/:shareName',(req,res)=>{
+  const shareName = req.params.shareName;
+})
+
 app.get('/invest/equity', async (req, res) => {
   if (!req.session.token) {
     req.session.token = jwt.sign({ userId: req.session.userId }, jwtSecret, { expiresIn: '1h' });

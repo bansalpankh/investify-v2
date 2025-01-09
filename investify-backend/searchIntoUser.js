@@ -16,3 +16,7 @@ export async function findUser(email){
       return false;
     }
 }
+
+export async function getShareDetails(shareName){
+  
+}
