@@ -18,5 +18,12 @@ export async function findUser(email){
 }
 
 export async function getShareDetails(shareName){
-  
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const data = await collection.findOne({CODE:shareName});
+  if (data){
+    return data;
+  }else{
+    return false;
+  }
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-// import axios from 'axios';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js';
@@ -8,14 +8,32 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const { shareName } = useParams();
-  const [Marketvalue, setMarketValue] = useState(124.25);
+  const [Marketvalue, setMarketValue] = useState(null);
+  const [change, setChange] = useState(null);
+  const [logo, setLogo] = useState(null);
+  const[uppercirc, setUpperCirc] = useState(null);
+  const[lowercirc, setLowerCirc] = useState(null);
   const [buy, setBuy] = useState(true);
   const [socket, setSocket] = useState(null);
-  const [room, setRoom] = useState(null);
   const [price, setPrice] = useState('');
   const [qty, setQty] = useState('');
-  // handleBuySubmit
-  // handleSellSubmit
+
+  useEffect(()=>{
+    async function fetchShareDetails(){
+      try{
+        let response = await axios.get(`http://localhost:5000/api/invest/equity/getDetails/${shareName}`);
+        console.log(response.data);
+        setMarketValue(response.data.Price);
+        setChange(response.data.Change);
+        setLogo(response.data.logo);
+        setUpperCirc(response.data.Upper_Circuit);
+        setLowerCirc(response.data.Lower_Circuit);
+      }catch(err){
+        console.log(err);
+      }
+    }
+    fetchShareDetails();
+  })
 
   useEffect(() => {
     const newSocket = io('http://localhost:5000');
@@ -37,21 +55,29 @@ export default function Charting() {
 
   const handleBuySubmit = (e) => {
     e.preventDefault();
-    if (socket && shareName && price && qty) {
-      socket.emit('buyOrder', { shareName, price, qty });
-      console.log('Buy order submitted:', { shareName, price, qty });
-    } else {
-      console.error('Invalid input or socket not connected.');
+    if (price>lowercirc && price<uppercirc){
+      if (socket && shareName && price && qty) {
+        socket.emit('buyOrder', { shareName, price, qty });
+        console.log('Buy order submitted:', { shareName, price, qty });
+      } else {
+        console.error('Invalid input or socket not connected.');
+      }
+    }else{
+      alert(`enter a value between ${lowercirc} and ${uppercirc}`);
     }
   };
 
   const handleSellSubmit = (e) => {
     e.preventDefault();
-    if (socket && shareName && price && qty) {
-      socket.emit('sellOrder', {shareName, price, qty});
-      console.log('Sell order submitted:', { shareName, price, qty });
-    } else {
-      console.error('Invalid input or socket not connected.');
+    if (price>lowercirc && price<uppercirc){
+      if (socket && shareName && price && qty) {
+        socket.emit('sellOrder', {shareName, price, qty});
+        console.log('Sell order submitted:', { shareName, price, qty });
+      } else {
+        console.error('Invalid input or socket not connected.');
+      }
+    }else{
+      alert(`enter a value between ${lowercirc} and ${uppercirc}`);
     }
   };
 
@@ -81,12 +107,12 @@ export default function Charting() {
     <div className="primary-flex mar-main-extra">
       <div className="float-10" />
       <div className="primary-flex flex-col float-55">
-        <img src="//assets-netstorage.groww.in/web-assets/billion_groww_desktop/prod/_next/static/media/O.5307e6f8.svg" alt="Logo" className="logo-img-stk back-white-round"/>
+        <img src={logo} alt="Logo" className="logo-img-stk back-white-round"/>
         <div className="primary-flex flex-col">
           <span className="font-roboto whiten text-enlarge mar-bottom">{shareName}</span>
           <div className="primary-flex align-center">
             <span className="font-roboto whiten text-enlarge mar-right">{Marketvalue}</span>
-            <span className="font-roboto active">+3.00 (3.01%)</span>
+            <span className="font-roboto active">{`${change} (3.01%)`}</span>
           </div>
           <div style={{ height: '200px', width: '100%' }} className="mar-top">
             <Line data={data} options={options} />
@@ -98,8 +124,8 @@ export default function Charting() {
         <div className="sell-buy-box primary-flex flex-col">
           <div className="price-box">
             <div className="font-roboto whiten primary-flex flex-col mar-left">
-              <span>Ola Electric Mobility</span>
-              <span className="font-small">{`ISE - ₹102.62`}</span>
+              <span>{shareName}</span>
+              <span className="font-small">{`ISE - ₹${Marketvalue}`}</span>
             </div>
           </div>
           <div className="primary-flex border-bottom">

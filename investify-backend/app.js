@@ -178,8 +178,15 @@ app.get('/api/invest/equity', authetication, async (req, res) => {
   }
 });
 
-app.get('/api/invest/equity/getDetails/:shareName',(req,res)=>{
+import { getShareDetails } from './searchIntoUser.js';
+app.get('/api/invest/equity/getDetails/:shareName',async (req,res)=>{
   const shareName = req.params.shareName;
+  try{
+    const data = await getShareDetails(shareName);
+    res.status(200).send(data);
+  }catch(err){
+    console.log(err);
+  }
 })
 
 app.get('/invest/equity', async (req, res) => {
