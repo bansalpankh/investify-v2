@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import getOrderDate, { getCurrentMySQLTime } from "./calculateOrderDate.js";
 mongoose.connect("mongodb://127.0.0.1:27017/Investify")
 .then(()=>{
   console.log("Connection Succeded");
@@ -33,3 +34,28 @@ export async function updateIntoMongoDB(shareName, price){
   const collection = Database.collection('Stocks');
   await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price}});
 }
+
+export async function allStocksToArray(){
+  try {
+      let arr = [];
+      const Database = mongoose.connection;
+      const StockData = Database.collection('Stocks');
+      const stocks = await StockData.find();
+      const documents = await stocks.toArray();
+      const date = getOrderDate();
+      const time = getCurrentMySQLTime();
+      documents.forEach((i)=>{
+        let newArr = [];
+        newArr.push(i.Price);
+        newArr.push(i.CODE);
+        newArr.push(date);
+        newArr.push(time);
+        arr.push(newArr);
+      })
+      return arr;
+    } catch (err) {
+      console.log(err);
+    }
+}
+
+// console.log(await allStocksToArray());

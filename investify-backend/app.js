@@ -30,12 +30,12 @@ app.use(express.static(path.join(__dirname, '../investify-frontend/build')));
 
 import mongoose from 'mongoose';
 mongoose.connect("mongodb://127.0.0.1:27017/Investify")
-  .then(() => {
-    console.log("Connection Succeded");
-  }).catch((err) => {
-    console.log(err);
-    process.exit(1);
-  });
+.then(() => {
+  console.log("Connection Succeded");
+}).catch((err) => {
+  console.log(err);
+  process.exit(1);
+});
 
 const oneDay = 60 * 60 * 24 * 1000;
 const sessionMiddleware = session({
@@ -184,8 +184,9 @@ app.get('/api/invest/equity', authetication, async (req, res) => {
   }
 });
 
+
 import { getShareDetails } from './searchIntoUser.js';
-import { addOrderIntoDatabase } from './SQLconnections.js';
+import { addOrderIntoDatabase, stockPriceUpdateMain } from './SQLconnections.js';
 import getOrderDate from './calculateOrderDate.js';
 app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)=>{
   const shareName = req.params.shareName;
@@ -211,6 +212,10 @@ app.get('/invest/equity/:shareName', (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../investify-frontend/build', 'index.html'));
 });
+
+setInterval(async () => {
+  await stockPriceUpdateMain();
+}, 60000);
 
 const port = process.env.PORT || 5000;
 server.listen(port, () => {

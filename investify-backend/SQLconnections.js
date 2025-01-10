@@ -1,4 +1,5 @@
 import mysql from 'mysql2';
+import { allStocksToArray } from './searchIntoUser.js';
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -35,6 +36,15 @@ function createMatchedTable(tableName){
     })
 }
 
+function createPriceTable(tableName){
+    const query = `Create table ${tableName} (price decimal(8,2), shareName varchar(25), date_of_record date,time_of_record time)`;
+    connection.query(query, function(err,result){
+        if (err) throw err;
+        console.log(result);
+        console.log("Sucess");
+    })
+}
+
 export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, userID, date_of_order) {
     const query = `INSERT INTO orders (buy_or_sell, shareName, price, qty, userID, date_of_order) VALUES (?, ?, ?, ?, ?, ?)`;
     const values = [buyOrSell, shareName, price, qty, userID, date_of_order];
@@ -58,5 +68,15 @@ export async function addMatchedOrders({ buyID, sellID, price, qty, date_of_orde
     });
 }
 
-
-// createMatchedTable('matched_orders');
+export async function stockPriceUpdateMain(){
+    let arrayI = [];
+    const main = await allStocksToArray();
+    arrayI.push(main);
+    const query = "INSERT INTO price_table (price, shareName, date_of_record, time_of_record) VALUES ?";
+    const values = arrayI;
+    connection.query(query, values,function (err,result){
+        if (err) throw err;
+        console.log(result);
+        console.log('50 rows inserted');
+    });
+}
