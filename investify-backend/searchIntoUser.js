@@ -27,3 +27,9 @@ export async function getShareDetails(shareName){
     return false;
   }
 }
+
+export async function updateIntoMongoDB(shareName, price){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price}});
+}

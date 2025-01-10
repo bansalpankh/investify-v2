@@ -63,6 +63,7 @@ io.on('connection', (socket)=>{
       await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
+      await updateIntoMongoDB(order.shareName,currentValue);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
       console.log('Order Added in the buy book');
       console.log(Orderbook.buyBook);
@@ -76,6 +77,7 @@ io.on('connection', (socket)=>{
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
+      await updateIntoMongoDB(order.shareName,currentValue);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
       console.log('Order Added in the sell book');
       console.log(Orderbook.sellBook);
@@ -133,7 +135,7 @@ const userSchema = new mongoose.Schema({
   amount: Number
 });
 const user = new mongoose.model('users', userSchema);
-import { findUser } from './searchIntoUser.js';
+import { findUser, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {
