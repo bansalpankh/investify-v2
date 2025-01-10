@@ -84,7 +84,7 @@ export async function stockPriceUpdateMain(){
 
 export async function getGraphData(shareName) {
     const today = getOrderDate();
-    const query = `SELECT price FROM price_table WHERE date_of_record = "${today}" AND shareName = "${shareName}" AND time_of_record >= "21:47:00"`;
+    const query = `SELECT price FROM price_table WHERE date_of_record = "${today}" AND shareName = "${shareName}" AND time_of_record >= "00:00:00"`;
     return new Promise((resolve, reject) => {
         connection.query(query, function(err, result) {
             if (err) {
