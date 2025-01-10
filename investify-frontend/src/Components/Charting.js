@@ -7,6 +7,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
+  const [tagSuccess,setTagSuccess] = useState(false);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
   const [graphData, setGraphData] = useState([]);
@@ -70,6 +71,10 @@ export default function Charting() {
     if (price>lowercirc && price<uppercirc){
       if (socket && shareName && price && qty) {
         socket.emit('buyOrder', { shareName, price, qty });
+        setPrice("");
+        setQty('');
+        setTagSuccess(true);
+        setTimeout(() => {setTagSuccess(false);}, 2000);
         console.log('Buy order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -84,6 +89,10 @@ export default function Charting() {
     if (price>lowercirc && price<uppercirc){
       if (socket && shareName && price && qty) {
         socket.emit('sellOrder', {shareName, price, qty});
+        setPrice("");
+        setQty('');
+        setTagSuccess(true);
+        setTimeout(() => {setTagSuccess(false);}, 2000);
         console.log('Sell order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -133,7 +142,13 @@ export default function Charting() {
       </div>
 
       <div className="float-35 primary-flex flex-col align-center">
-        <div className="sell-buy-box primary-flex flex-col">
+        {tagSuccess?(
+          <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+          </svg>
+        ):(
+          <div className="sell-buy-box primary-flex flex-col">
           <div className="price-box">
             <div className="font-roboto whiten primary-flex flex-col mar-left">
               <span>{shareName}</span>
@@ -144,7 +159,6 @@ export default function Charting() {
             <button className={`padding-sml mar-top-sml ${buy ? 'make-active' : ''}`} id="buy" onClick={toggleBuy}>BUY</button>
             <button className={`padding-sml mar-top-sml ${!buy ? 'make-active' : ''}`} id="sell" onClick={toggleBuy}>SELL</button>
           </div>
-
           <form className="primary-grid">
             <div className="primary-flex font-roboto padding-sml transform-down">
               <span className="whiten float-50 transform-down">Quantity</span>
@@ -166,6 +180,7 @@ export default function Charting() {
             )}
           </form>
         </div>
+        )}
       </div>
     </div>
   );
