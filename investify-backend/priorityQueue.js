@@ -1,3 +1,5 @@
+import { addMatchedOrders } from "./SQLconnections.js";
+
 class PriorityQueue {
     constructor(comparator) {
         this.items = [];
@@ -86,11 +88,13 @@ export default class OrderBook {
             const buyOrder = this.buyBook.dequeue();
             const matchedQty = Math.min(sellOrder.qty, buyOrder.qty);
             const matchedPrice = sellOrder.price;
+            const date_of_orders = new Date().toISOString().split('T')[0];
+            addMatchedOrders({buyID: buyOrder.userID,sellID: sellOrder.userID,price: matchedPrice,qty: matchedQty,date_of_orders,});
             sellOrder.qty -= matchedQty;
             buyOrder.qty -= matchedQty;
-            console.log(`Matched ${matchedQty} shares of ${sellOrder.share} at price ${matchedPrice}`);
             if (sellOrder.qty > 0) this.sellBook.enqueue(sellOrder);
             if (buyOrder.qty > 0) this.buyBook.enqueue(buyOrder);
+            console.log(`Matched ${matchedQty} shares of ${sellOrder.share} at price ${matchedPrice}`);
         }
     }
     getCurrentMarketValue(shareName) {

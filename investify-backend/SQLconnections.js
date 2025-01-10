@@ -45,6 +45,18 @@ export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, use
     });
 }
 
-export async function addMatchedOrders(){};
+export async function addMatchedOrders({ buyID, sellID, price, qty, date_of_orders }) {
+    const query = `INSERT INTO matched_orders (buyID, sellID, price, qty, date_of_order) VALUES (?,?,?,?,?)`;
+    const values = [buyID, sellID, price, qty, date_of_orders];
+    connection.query(query, values, function (err, result) {
+        if (err) {
+            console.error("Error inserting matched order:", err);
+            return;
+        }
+        console.log(result);
+        console.log("1 Row Inserted");
+    });
+}
 
-createMatchedTable('matched_orders');
+
+// createMatchedTable('matched_orders');

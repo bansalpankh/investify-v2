@@ -7,3 +7,5 @@ export default async function generateRandomSequence(length) {
   }  
   return randomSequence;
 } 
+
+// console.log(await generateRandomSequence(16));
