@@ -18,7 +18,7 @@ export default function Navbar() {
         <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="notifications-outline" size='large'></ion-icon></Link>
         <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="cart-outline" size='large'></ion-icon></Link>
         <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="wallet-outline" size='large'></ion-icon></Link>
-        <Link to='/' className='text-enlarge whiten no-deco'>Hi, Shaury!</Link>
+        <Link to='/' className='text-enlarge whiten no-deco'>Hi, User!</Link>
       </div>
     </div>
   )

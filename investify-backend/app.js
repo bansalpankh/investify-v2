@@ -34,6 +34,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/Investify")
     console.log("Connection Succeded");
   }).catch((err) => {
     console.log(err);
+    process.exit(1);
   });
 
 const oneDay = 60 * 60 * 24 * 1000;
@@ -42,6 +43,7 @@ const sessionMiddleware = session({
   saveUninitialized: true,
   cookie: { maxAge: oneDay },
   resave: false,
+  secure: true
 });
 
 app.use(sessionMiddleware);
@@ -58,6 +60,7 @@ io.on('connection', (socket)=>{
   socket.on('buyOrder', async (order)=>{
     if (session && session.userId){
       Orderbook.addBuyOrder(order.price, order.qty, order.shareName, session.userId);
+      await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
@@ -70,6 +73,7 @@ io.on('connection', (socket)=>{
   socket.on('sellOrder',async (order)=>{
     if (session && session.userId){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
+      await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
@@ -179,7 +183,9 @@ app.get('/api/invest/equity', authetication, async (req, res) => {
 });
 
 import { getShareDetails } from './searchIntoUser.js';
-app.get('/api/invest/equity/getDetails/:shareName',async (req,res)=>{
+import { addOrderIntoDatabase } from './SQLconnections.js';
+import getOrderDate from './calculateOrderDate.js';
+app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)=>{
   const shareName = req.params.shareName;
   try{
     const data = await getShareDetails(shareName);
