@@ -1,5 +1,6 @@
 import mysql from 'mysql2';
 import { allStocksToArray } from './searchIntoUser.js';
+import getOrderDate from './calculateOrderDate.js';
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -78,5 +79,20 @@ export async function stockPriceUpdateMain(){
         if (err) throw err;
         console.log(result);
         console.log('50 rows inserted');
+    });
+}
+
+export async function getGraphData(shareName) {
+    const today = getOrderDate();
+    const query = `SELECT price FROM price_table WHERE date_of_record = "${today}" AND shareName = "${shareName}" AND time_of_record >= "21:47:00"`;
+    return new Promise((resolve, reject) => {
+        connection.query(query, function(err, result) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const prices = result.map(row => row.price);
+            resolve(prices);
+        });
     });
 }

@@ -9,6 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 export default function Charting() {
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
+  const [graphData, setGraphData] = useState([]);
   const [change, setChange] = useState(null);
   const [logo, setLogo] = useState(null);
   const[uppercirc, setUpperCirc] = useState(null);
@@ -18,6 +19,17 @@ export default function Charting() {
   const [price, setPrice] = useState('');
   const [qty, setQty] = useState('');
 
+  useEffect(()=>{
+    async function fetchGraph(){
+      try{
+        let graph = await axios.get(`http://localhost:5000/api/invest/getChart/${shareName}`);
+        setGraphData(graph.data);
+      }catch(err){
+        console.log(err);
+      }
+    }
+    fetchGraph();
+  })
   useEffect(()=>{
     async function fetchShareDetails(){
       try{
@@ -88,7 +100,7 @@ export default function Charting() {
     datasets: [
       {
         label: 'Price Trend',
-        data: [101.6, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 101.4, 98.0, 98.8,97.7,99.3,100.9,100.1,102.3,99.9,99.7,101.3],
+        data: graphData,
         fill: false,
         borderColor: 'rgba(0, 176, 80, 1)',
         borderWidth: 2,

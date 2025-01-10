@@ -55,7 +55,7 @@ io.on('connection', (socket)=>{
   console.log('User Connected on Investify');
   socket.on('joinSharedRoom',(shareName)=>{
     socket.join(shareName);
-    console.log(`user joined ${shareName} shared Room`);
+    // console.log(`user joined ${shareName} shared Room`);
   })
   socket.on('buyOrder', async (order)=>{
     if (session && session.userId){
@@ -65,8 +65,8 @@ io.on('connection', (socket)=>{
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
       await updateIntoMongoDB(order.shareName,currentValue);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
-      console.log('Order Added in the buy book');
-      console.log(Orderbook.buyBook);
+      // console.log('Order Added in the buy book');
+      // console.log(Orderbook.buyBook);
     } else {
       console.log('order is not defined for this session');
     }
@@ -79,8 +79,8 @@ io.on('connection', (socket)=>{
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
       await updateIntoMongoDB(order.shareName,currentValue);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
-      console.log('Order Added in the sell book');
-      console.log(Orderbook.sellBook);
+      // console.log('Order Added in the sell book');
+      // console.log(Orderbook.sellBook);
     } else {
       console.log('order is not defined for this session');
     }
@@ -104,7 +104,7 @@ import generateRandomSequence from './generateRandomSessionID.js';
 app.post('/send-otp', async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     req.session.otp = await generateOTP(100000, 999999);
     const mailOptions = {
       from: process.env.MAIL_ID,
@@ -116,11 +116,11 @@ app.post('/send-otp', async (req, res) => {
       if (err) {
         return console.error(err);
       }
-      console.log("Sent Successfully");
+      // console.log("Sent Successfully");
     });
     req.session.userId = await generateRandomSequence(16);
     req.session.token = jwt.sign({ userId: req.session.userId }, jwtSecret, { expiresIn: '1h' });
-    console.log(req.session);
+    // console.log(req.session);
     res.status(200).send("Successful");
   } catch (error) {
     console.log(error);
@@ -139,19 +139,19 @@ import { findUser, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {
-    console.log(`session: ${req.session.otp}`);
-    console.log(`req: ${req.body.otp}`);
+    // console.log(`session: ${req.session.otp}`);
+    // console.log(`req: ${req.body.otp}`);
     const user_ = await findUser(req.body.email);
     if (req.body.otp == req.session.otp) {
       if (user_) {
         req.session.userId = user_.uuID;
         res.status(200).send({ "success": true });
-        console.log(req.session);
+        // console.log(req.session);
       } else {
         const body = { userId: req.body.email, KYC: false, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 0 };
         let saveobj = new user(body);
         saveobj.save().then(() => {
-          console.log("saved");
+          // console.log("saved");
           res.status(200).send({ "success": true });
         });
       }
@@ -184,9 +184,18 @@ app.get('/api/invest/equity', authetication, async (req, res) => {
   }
 });
 
+app.get('/api/invest/getChart/:shareName',authetication,async (req,res)=>{
+  try{
+    const shareName = req.params.shareName;
+    let priceDataArray = await getGraphData(shareName);
+    res.status(200).send(priceDataArray);
+  }catch(err){
+    console.log(err);
+  }
+})
 
 import { getShareDetails } from './searchIntoUser.js';
-import { addOrderIntoDatabase, stockPriceUpdateMain } from './SQLconnections.js';
+import { addOrderIntoDatabase, getGraphData, stockPriceUpdateMain } from './SQLconnections.js';
 import getOrderDate from './calculateOrderDate.js';
 app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)=>{
   const shareName = req.params.shareName;
