@@ -92,7 +92,7 @@ app.get('/', (req, res) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'shaurysingh84@gmail.com',
+    user: process.env.MAIL_ID,
     pass: process.env.MAIL_PASS
   },
 });
@@ -105,7 +105,7 @@ app.post('/send-otp', async (req, res) => {
     console.log(req.body);
     req.session.otp = await generateOTP(100000, 999999);
     const mailOptions = {
-      from: 'shaurysingh84@gmail.com',
+      from: process.env.MAIL_ID,
       to: email,
       subject: 'Welcome To Investify! - OTP For Login',
       text: `Your OTP for Login at www.investify.in is: ${req.session.otp}. This OTP is only valid for the next 10 minutes. Please Do Not Share This OTP With Anyone even if the person claims to our employee.\nMutual Funds and Equity are subject to Market Risks. Please Analyze all the terms and conditions before Investing.\nHappy Investing!`

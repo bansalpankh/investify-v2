@@ -26,6 +26,15 @@ function createTableOrders(tableName){
     })
 }
 
+function createMatchedTable(tableName){
+    const query = `Create table ${tableName} (buyID varchar(16), sellID varchar(16), price decimal(8,2), qty int, date_of_order date)`;
+    connection.query(query, function(err, result){
+        if (err) throw err;
+        console.log(result);
+        console.log("Success");
+    })
+}
+
 export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, userID, date_of_order) {
     const query = `INSERT INTO orders (buy_or_sell, shareName, price, qty, userID, date_of_order) VALUES (?, ?, ?, ?, ?, ?)`;
     const values = [buyOrSell, shareName, price, qty, userID, date_of_order];
@@ -35,3 +44,7 @@ export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, use
         console.log("1 Row Inserted");
     });
 }
+
+export async function addMatchedOrders(){};
+
+createMatchedTable('matched_orders');
