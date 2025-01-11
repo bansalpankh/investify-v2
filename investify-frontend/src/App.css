@@ -66,6 +66,10 @@ body{
     color: white
 }
 /* floats */
+.width-80{
+    width: 95%;
+    font-size: 12px;
+}
 .float-33{
     float: left;
     width: 33.33%;
@@ -106,6 +110,9 @@ body{
     margin: 2px;
     border-bottom: 0.8px solid rgba(108, 103, 103, 0.697);
     padding-bottom: 5px;
+}
+.border-5{
+    border-radius: 3px;
 }
 .bg-white{
     background-color: white;
@@ -235,6 +242,9 @@ body{
 }
 .mar-bottom{
     margin-bottom: 10px;
+}
+.background-light-red{
+    background-color: rgba(219, 63, 63, 0.695);
 }
 /* texts */
 .font-playfair{

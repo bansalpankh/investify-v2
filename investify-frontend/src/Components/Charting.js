@@ -8,6 +8,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
+  const [notInRange,setNotInRange] = useState(false);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
   const [graphData, setGraphData] = useState([]);
@@ -35,7 +36,7 @@ export default function Charting() {
     async function fetchShareDetails(){
       try{
         let response = await axios.get(`http://localhost:5000/api/invest/equity/getDetails/${shareName}`);
-        console.log(response.data);
+        // console.log(response.data);
         setMarketValue(response.data.Price);
         setChange(response.data.Change);
         setLogo(response.data.logo);
@@ -52,10 +53,10 @@ export default function Charting() {
     const newSocket = io('http://localhost:5000');
     setSocket(newSocket);
     newSocket.on('connect', () => {
-      console.log('Connected to server');
+      // console.log('Connected to server');
       if (shareName) {
         newSocket.emit('joinSharedRoom', shareName);
-        console.log(`Joining room: ${shareName}`);
+        // console.log(`Joining room: ${shareName}`);
       }
       newSocket.on('updateMarketValue',(currentValue)=>{
         setMarketValue(currentValue);
@@ -75,12 +76,13 @@ export default function Charting() {
         setQty('');
         setTagSuccess(true);
         setTimeout(() => {setTagSuccess(false);}, 2000);
-        console.log('Buy order submitted:', { shareName, price, qty });
+        // console.log('Buy order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
       }
     }else{
-      alert(`enter a value between ${lowercirc} and ${uppercirc}`);
+      // setNotInRange(true);
+      console.log('sorry')
     }
   };
 
@@ -93,12 +95,16 @@ export default function Charting() {
         setQty('');
         setTagSuccess(true);
         setTimeout(() => {setTagSuccess(false);}, 2000);
-        console.log('Sell order submitted:', { shareName, price, qty });
+        // console.log('Sell order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
       }
     }else{
-      alert(`enter a value between ${lowercirc} and ${uppercirc}`);
+      // setNotInRange(true);
+      console.log('sorry')
+    }
+    if (price<lowercirc || price>uppercirc){
+      setNotInRange(false);
     }
   };
 
@@ -173,6 +179,13 @@ export default function Charting() {
               </div>
             </div>
             <div className="height-main" />
+            {notInRange ? (
+              <div></div>
+            ):(
+              <div class="primary-flex justify-center mar-top-sml">
+                <div class="primary-flex justify-center font-playfair background-light-red whiten width-80 border-5">Enter A Value Between {lowercirc} and {uppercirc}</div>
+              </div>
+            )}
             {buy ? (
               <button type="submit" className="order-placer" onClick={handleBuySubmit}>BUY</button>
             ) : (
