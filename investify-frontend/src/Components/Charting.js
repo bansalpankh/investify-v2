@@ -8,7 +8,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
-  const [notInRange,setNotInRange] = useState(false);
+  const [notInRange,setNotInRange] = useState(true);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
   const [graphData, setGraphData] = useState([]);
@@ -86,6 +86,16 @@ export default function Charting() {
     }
   };
 
+  useEffect(() => {
+    if (lowercirc !== null && uppercirc !== null) {
+      if (price < lowercirc || price > uppercirc) {
+        setNotInRange(true);
+      } else {
+        setNotInRange(false);
+      }
+    }
+  }, [price, lowercirc, uppercirc]);
+
   const handleSellSubmit = (e) => {
     e.preventDefault();
     if (price>lowercirc && price<uppercirc){
@@ -102,9 +112,6 @@ export default function Charting() {
     }else{
       // setNotInRange(true);
       console.log('sorry')
-    }
-    if (price<lowercirc || price>uppercirc){
-      setNotInRange(false);
     }
   };
 
@@ -180,11 +187,11 @@ export default function Charting() {
             </div>
             <div className="height-main" />
             {notInRange ? (
-              <div></div>
-            ):(
               <div class="primary-flex justify-center mar-top-sml">
-                <div class="primary-flex justify-center font-playfair background-light-red whiten width-80 border-5">Enter A Value Between {lowercirc} and {uppercirc}</div>
+                <div class="primary-flex justify-center font-roboto background-light-red whiten width-80 border-5">Enter A Value Between {lowercirc} and {uppercirc}</div>
               </div>
+            ):(
+              <div></div>
             )}
             {buy ? (
               <button type="submit" className="order-placer" onClick={handleBuySubmit}>BUY</button>

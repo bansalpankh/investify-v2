@@ -246,6 +246,9 @@ body{
 .background-light-red{
     background-color: rgba(219, 63, 63, 0.695);
 }
+.background-light-green{
+    background-color: #00bfa68f;
+}
 /* texts */
 .font-playfair{
     font-family: "Playfair Display", system-ui;
