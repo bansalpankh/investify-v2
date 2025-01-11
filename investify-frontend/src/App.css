@@ -155,7 +155,10 @@ body{
     width: 50%;
 }
 .card{
-    padding: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 15px;
+    padding-right: 15px;
     height: max-content;
     width: max-content;
     background-color: rgba(42, 41, 40, 0.656);

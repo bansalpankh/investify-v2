@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.ee31c619.css",
-    "main.js": "/static/js/main.2f4f38b1.js",
+    "main.css": "/static/css/main.9328467f.css",
+    "main.js": "/static/js/main.7297a05e.js",
     "static/media/Investify.png": "/static/media/Investify.76314c9b18bb554dcbd6.png",
     "index.html": "/index.html",
-    "main.ee31c619.css.map": "/static/css/main.ee31c619.css.map",
-    "main.2f4f38b1.js.map": "/static/js/main.2f4f38b1.js.map"
+    "main.9328467f.css.map": "/static/css/main.9328467f.css.map",
+    "main.7297a05e.js.map": "/static/js/main.7297a05e.js.map"
   },
   "entrypoints": [
-    "static/css/main.ee31c619.css",
-    "static/js/main.2f4f38b1.js"
+    "static/css/main.9328467f.css",
+    "static/js/main.7297a05e.js"
   ]
 }

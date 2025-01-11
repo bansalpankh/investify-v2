@@ -18,19 +18,18 @@ export default function SectionShares(props) {
       }
     }
     fetchData();
-  },[])
+  },[data])
   return (
-    <div className='primary-flex flex-col overflow-x-scroll mar-top'>
+    <div className='primary-flex flex-col overflow-x-scroll mar-top-sml'>
         <p className='text-enlarge whiten font-roboto'>{props.marketType}</p>
         <div className='primary-flex overflow-x-scroll mar-top-card-index'>
             {
               data.length > 0 ? (
-                data.map((items)=>(
+                data.slice(props.noOfSharesStart,props.noOfSharesEnd).map((items)=>(
                   <ShareCard logo={items.logo} code={items.CODE} index={items.Name} price={items.Price} profit={items.Change} percent={`(${(items.Change/(items.Price-items.Change)).toFixed(2)})`}/>
                 ))
               ):(
                 <div className='primary-flex'>
-                  <SkeletonShareCard/>
                   <SkeletonShareCard/>
                   <SkeletonShareCard/>
                   <SkeletonShareCard/>

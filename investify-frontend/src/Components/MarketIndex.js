@@ -20,7 +20,9 @@ export default function MarketIndex(props) {
             </div>
           </div>
           <div>
-            <SectionShares marketType="Most Bought On Investify"></SectionShares>
+            <SectionShares marketType="Most Bought On Investify" noOfSharesStart="0" noOfSharesEnd="5"></SectionShares>
+            <SectionShares marketType="Top Intraday" noOfSharesStart="5" noOfSharesEnd="10"></SectionShares>
+            <SectionShares marketType="Highest By Volume" noOfSharesStart="10" noOfSharesEnd="15"></SectionShares>
           </div>
         </div>
         <div className='primary-flex flex-col align-center justify-start float-35'>
