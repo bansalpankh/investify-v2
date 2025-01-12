@@ -74,6 +74,10 @@ body{
     float: left;
     width: 33.33%;
 }
+.float-25{
+    float: left;
+    width: 25%
+}
 .float-10{
     float: left;
     width: 10%;

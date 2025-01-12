@@ -58,11 +58,19 @@ io.on('connection', (socket)=>{
     // console.log(`user joined ${shareName} shared Room`);
   })
   socket.on('buyOrder', async (order)=>{
-    if (session && session.userId){
+    if (session && session.userId && session.amount>=(order.price*order.qty)){
+      session.amount = session.amount - (order.price*order.qty);
       Orderbook.addBuyOrder(order.price, order.qty, order.shareName, session.userId);
-      await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
-      Orderbook.matchOrders();
-      const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
+      const isUpdated = await findandUpdateUserId(session.userId,session.amount);
+      if (isUpdated){
+        await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
+        Orderbook.matchOrders();
+      }
+      if (!isUpdated){
+        console.log("Order Can't Be Placed, Insuffienct Funds");
+      }
+      const upperC = await getUpperCircuit(order.shareName);
+      const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC);
       await updateIntoMongoDB(order.shareName,currentValue);
       io.to(order.shareName).emit('updateMarketValue', currentValue);
       // console.log('Order Added in the buy book');
@@ -135,7 +143,7 @@ const userSchema = new mongoose.Schema({
   amount: Number
 });
 const user = new mongoose.model('users', userSchema);
-import { findUser, updateIntoMongoDB } from './searchIntoUser.js';
+import { findandUpdateUserId, findUser, getUpperCircuit, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {
@@ -145,8 +153,9 @@ app.post('/verify-otp', async (req, res) => {
     if (req.body.otp == req.session.otp) {
       if (user_) {
         req.session.userId = user_.uuID;
+        req.session.amount = user_.amount;
         res.status(200).send({ "success": true });
-        // console.log(req.session);
+        console.log(req.session);
       } else {
         const body = { userId: req.body.email, KYC: false, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 0 };
         let saveobj = new user(body);
@@ -166,7 +175,7 @@ app.post('/verify-otp', async (req, res) => {
 const authetication = (req, res, next) => {
   if (!req.session.token) return res.sendStatus(401);
   jwt.verify(req.session.token, jwtSecret, (err, user) => {
-    if (err) return res.status(403).send('Forbidden');
+    if (err) return res.sendStatus(403).send('Forbidden');
     req.user = user;
     next();
   });
@@ -195,7 +204,7 @@ app.get('/api/invest/getChart/:shareName',authetication,async (req,res)=>{
 })
 
 import { getShareDetails } from './searchIntoUser.js';
-import { addOrderIntoDatabase, getGraphData, stockPriceUpdateMain } from './SQLconnections.js';
+import { addOrderIntoDatabase, getGraphData, getUserInvestments, getUserTotalInvestment, stockPriceUpdateMain } from './SQLconnections.js';
 import getOrderDate from './calculateOrderDate.js';
 app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)=>{
   const shareName = req.params.shareName;
@@ -204,6 +213,46 @@ app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)
     res.status(200).send(data);
   }catch(err){
     console.log(err);
+  }
+})
+
+// app.get('/api/user/totalInvestments',authetication,async(req,res)=>{
+//   try{
+//     if (req.session.userId){
+//       const data = await getUserTotalInvestment(req.session.userId);
+//       console.log(data);
+//       res.status(200).send(data);
+//     }
+//   }catch(err){
+//     res.status(404).send('Not Found');
+//   }
+// })
+
+app.get('/api/user/totalInvestments', authetication, async (req, res) => {
+  try {
+    console.log('User session:', req.session);
+    if (!req.session.userId) {
+      console.log('No user logged in.');
+      return res.status(401).send('Unauthorized');
+    }
+    const data = await getUserTotalInvestment(req.session.userId);
+    console.log('Total investment:', data);
+    res.status(200).send(data.toString());
+  } catch (err) {
+    console.error('Backend error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+app.get('/api/user/allInvestments',authetication,async(req,res)=>{
+  try{
+    if (req.session.userId){
+      const data = await getUserInvestments(req.session.userId);
+      res.status(200).send(data);
+    }
+  }catch(err){
+    res.status(404).send('Not Found');
   }
 })
 

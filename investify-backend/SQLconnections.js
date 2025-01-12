@@ -56,9 +56,9 @@ export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, use
     });
 }
 
-export async function addMatchedOrders({ buyID, sellID, price, qty, date_of_orders }) {
-    const query = `INSERT INTO matched_orders (buyID, sellID, price, qty, date_of_order) VALUES (?,?,?,?,?)`;
-    const values = [buyID, sellID, price, qty, date_of_orders];
+export async function addMatchedOrders({ buyID, sellID, price, qty,shareName ,date_of_orders }) {
+    const query = `INSERT INTO matched_orders (buyID, sellID, price, qty, shareName,date_of_order) VALUES (?,?,?,?,?,?)`;
+    const values = [buyID, sellID, price, qty, shareName,date_of_orders];
     connection.query(query, values, function (err, result) {
         if (err) {
             console.error("Error inserting matched order:", err);
@@ -96,3 +96,39 @@ export async function getGraphData(shareName) {
         });
     });
 }
+
+export async function getUserInvestments(userID) {
+    const query = `SELECT price, shareName, qty FROM matched_orders WHERE matched_orders.buyID="${userID}"`;
+    return new Promise((resolve, reject) => {
+        connection.query(query, function (err, result) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const shareMap = new Map();
+            result.forEach(({ price, shareName, qty }) => {
+                if (!shareMap.has(shareName)) {
+                    shareMap.set(shareName, { totalValue: 0, totalShares: 0 });
+                }
+                const shareData = shareMap.get(shareName);
+                shareData.totalValue += price * qty;
+                shareData.totalShares += qty;
+                shareMap.set(shareName, shareData);
+            });
+            const finalArray = Array.from(shareMap.entries()).map(([shareName, { totalValue, totalShares }]) => ({
+                shareName,
+                totalValue,
+                avgPrice: totalValue / totalShares,
+            }));
+            resolve(finalArray);
+        });
+    });
+}
+
+export async function getUserTotalInvestment(userID) {
+    const userInvestments = await getUserInvestments(userID);
+    const totalInvestment = userInvestments.reduce((sum, { totalValue }) => sum + totalValue, 0);
+    return totalInvestment;
+}
+
+// console.log(await getUserTotalInvestment('8QeZcVQVFweMLR5T'));

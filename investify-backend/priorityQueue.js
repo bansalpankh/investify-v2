@@ -81,24 +81,33 @@ export default class OrderBook {
         const order = { price, qty, share: shareName, time: new Date(), userID };
         this.buyBook.enqueue(order);
         this.matchOrders();
+        // console.log(this.buyBook);
     }
     matchOrders() {
         while (!this.sellBook.isEmpty() && !this.buyBook.isEmpty() && this.buyBook.peek().price >= this.sellBook.peek().price) {
             const sellOrder = this.sellBook.dequeue();
             const buyOrder = this.buyBook.dequeue();
-            const matchedQty = Math.min(sellOrder.qty, buyOrder.qty);
-            const matchedPrice = sellOrder.price;
-            const date_of_orders = new Date().toISOString().split('T')[0];
-            addMatchedOrders({buyID: buyOrder.userID,sellID: sellOrder.userID,price: matchedPrice,qty: matchedQty,date_of_orders,});
-            sellOrder.qty -= matchedQty;
-            buyOrder.qty -= matchedQty;
-            if (sellOrder.qty > 0) this.sellBook.enqueue(sellOrder);
-            if (buyOrder.qty > 0) this.buyBook.enqueue(buyOrder);
-            console.log(`Matched ${matchedQty} shares of ${sellOrder.share} at price ${matchedPrice}`);
+            // console.log(sellOrder);
+            // console.log(buyOrder);
+            if (sellOrder.share == buyOrder.share){
+                const matchedQty = Math.min(sellOrder.qty, buyOrder.qty);
+                const matchedPrice = sellOrder.price;
+                const date_of_orders = new Date().toISOString().split('T')[0];
+                addMatchedOrders({buyID: buyOrder.userID,sellID: sellOrder.userID,price: matchedPrice,qty: matchedQty,shareName:sellOrder.share,date_of_orders,});
+                sellOrder.qty -= matchedQty;
+                buyOrder.qty -= matchedQty;
+                if (sellOrder.qty > 0) this.sellBook.enqueue(sellOrder);
+                if (buyOrder.qty > 0) this.buyBook.enqueue(buyOrder);
+                console.log(`Matched ${matchedQty} shares of ${sellOrder.share} at price ${matchedPrice}`);
+            }
         }
     }
-    getCurrentMarketValue(shareName) {
+    getCurrentMarketValue(shareName, uppercirc) {
         const lowestSellOrder = this.sellBook.items.find(order => order.share === shareName);
-        return lowestSellOrder ? lowestSellOrder.price : null;
-    }
+        return lowestSellOrder ? lowestSellOrder.price : uppercirc;
+    }    
 }
+
+// const book = new OrderBook();
+// book.addBuyOrder(150,10,'share','sharySingh');
+// book.addSellOrder(150,10,'share','swarnika');

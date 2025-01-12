@@ -8,14 +8,16 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
+  const [PER, setPER] = useState(null);
+  const [volume, setVolume] = useState(null);
   const [notInRange,setNotInRange] = useState(true);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
   const [graphData, setGraphData] = useState([]);
   const [change, setChange] = useState(null);
   const [logo, setLogo] = useState(null);
-  const[uppercirc, setUpperCirc] = useState(null);
-  const[lowercirc, setLowerCirc] = useState(null);
+  const [uppercirc, setUpperCirc] = useState(null);
+  const [lowercirc, setLowerCirc] = useState(null);
   const [buy, setBuy] = useState(true);
   const [socket, setSocket] = useState(null);
   const [price, setPrice] = useState('');
@@ -42,6 +44,8 @@ export default function Charting() {
         setLogo(response.data.logo);
         setUpperCirc(response.data.Upper_Circuit);
         setLowerCirc(response.data.Lower_Circuit);
+        setVolume(response.data.Volume);
+        setPER(response.data.PERatio);
       }catch(err){
         console.log(err);
       }
@@ -152,6 +156,27 @@ export default function Charting() {
             <Line data={data} options={options} />
           </div>
         </div>
+        <div className='primary-grid'>
+          <span className="font-roboto whiten text-enlarge mar-top">Overview</span>
+          <div className='primary-flex justify-start width-full'>
+            <div className='primary-grid justify-center padding-main float-25 whiten font-roboto'>
+              <span>Upper Circuit</span>
+              <span className='mar-top-sml'>{uppercirc}</span>
+            </div>
+            <div className='primary-grid justify-center padding-main float-25 whiten font-roboto'>
+              <span>Lower Circuit</span>
+              <span className='mar-top-sml'>{lowercirc}</span>
+            </div>
+            <div className='primary-grid justify-center padding-main float-25 whiten font-roboto'>
+              <span>Volume</span>
+              <span className='mar-top-sml'>{volume}</span>
+            </div>
+            <div className='primary-grid justify-center padding-main float-25 whiten font-roboto'>
+              <span>P/E Ratio</span>
+              <span className='mar-top-sml'>{PER}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="float-35 primary-flex flex-col align-center">
@@ -187,8 +212,8 @@ export default function Charting() {
             </div>
             <div className="height-main" />
             {notInRange ? (
-              <div class="primary-flex justify-center mar-top-sml">
-                <div class="primary-flex justify-center font-roboto background-light-red whiten width-80 border-5">Enter A Value Between {lowercirc} and {uppercirc}</div>
+              <div className="primary-flex justify-center mar-top-sml">
+                <div className="primary-flex justify-center font-roboto background-light-red whiten width-80 border-5 padding-small">Limit Price Should Be Between {lowercirc} and {uppercirc}</div>
               </div>
             ):(
               <div></div>

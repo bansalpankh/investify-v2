@@ -18,6 +18,25 @@ export async function findUser(email){
     }
 }
 
+export async function findandUpdateUserId(userId,amount){
+  const Database = mongoose.connection;
+  const collection = Database.collection('users');
+  const user = await collection.findOneAndUpdate({uuID : userId},{$set:{amount:amount}});
+  if (user) return true;
+  return false;
+}
+
+
+export async function getUpperCircuit(shareName){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const uppercirc = await collection.findOne({CODE:shareName});
+  if (uppercirc){
+    return uppercirc.Upper_Circuit;
+  }else{
+    return false;
+  }
+}
 export async function getShareDetails(shareName){
   const Database = mongoose.connection;
   const collection = Database.collection('Stocks');
@@ -59,3 +78,5 @@ export async function allStocksToArray(){
 }
 
 // console.log(await allStocksToArray());
+// console.log(await findandUpdateUserId("8QeZcVQVFweMLR5T",1200));
+// console.log(await getUpperCircuit("BAJAJHFL"));
