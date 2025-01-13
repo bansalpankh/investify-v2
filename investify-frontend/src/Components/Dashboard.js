@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 export default function Dashboard() {
-  const [totalInvestment,setTotalInvestment] = useState(23.45);
+  const [totalInvestment,setTotalInvestment] = useState(null);
   useEffect(()=>{
     async function getTotalInvestment(){
       try{

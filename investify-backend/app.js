@@ -216,18 +216,6 @@ app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)
   }
 })
 
-// app.get('/api/user/totalInvestments',authetication,async(req,res)=>{
-//   try{
-//     if (req.session.userId){
-//       const data = await getUserTotalInvestment(req.session.userId);
-//       console.log(data);
-//       res.status(200).send(data);
-//     }
-//   }catch(err){
-//     res.status(404).send('Not Found');
-//   }
-// })
-
 app.get('/api/user/totalInvestments', authetication, async (req, res) => {
   try {
     console.log('User session:', req.session);
