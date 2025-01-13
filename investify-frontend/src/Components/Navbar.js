@@ -15,7 +15,7 @@ export default function Navbar() {
         <input type='text' placeholder='What Do You Want To Search For Today?' className='search-bar transform-down'/>
       </div>
       <div className='primary-flex float-33 align-center'>
-        <ion-icon name="notifications-outline" size='large' className="nav-icon whiten mar-right-extra"></ion-icon>
+        <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="notifications-outline" size='large' className="nav-icon whiten mar-right-extra"></ion-icon></Link>
         <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="cart-outline" size='large'></ion-icon></Link>
         <Link to='/' className='nav-icon whiten mar-right-extra'><ion-icon name="wallet-outline" size='large'></ion-icon></Link>
         <Link to='/' className='text-enlarge whiten no-deco'>Hi, User!</Link>
