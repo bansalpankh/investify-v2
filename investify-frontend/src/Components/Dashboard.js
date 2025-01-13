@@ -7,8 +7,8 @@ export default function Dashboard() {
       try{
         let response = await axios.get('http://localhost:5000/api/user/totalInvestments')
         setTotalInvestment(response.data);
-        console.log(response);
-        console.log(response.data);
+        // console.log(response);
+        // console.log(response.data);
       }catch(err){
         console.log(err);
       }
