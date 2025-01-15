@@ -24,14 +24,16 @@ To Run The Production Server:<br>
 **Run Command:** *npm install*<br>
 
 ***Set up the environment variables in the .env file and we are good to go!:***<br>
-&nbsp;&nbsp;&nbsp;&nbsp;PORT<br>
-&nbsp;&nbsp;&nbsp;&nbsp;SECRET_KEY<br>
-&nbsp;&nbsp;&nbsp;&nbsp;MAIL_PASS<br>
-&nbsp;&nbsp;&nbsp;&nbsp;AUTH_PASS_API_KEY<br>
-&nbsp;&nbsp;&nbsp;&nbsp;JWT_SECRET<br>
-&nbsp;&nbsp;&nbsp;&nbsp;MYSQL_PASSWORD<br>
-&nbsp;&nbsp;&nbsp;&nbsp;MSQL_DATABASE<br>
-&nbsp;&nbsp;&nbsp;&nbsp;MAIL_ID<br>
+```
+1.PORT
+2.SECRET_KEY
+3.MAIL_PASS
+4.AUTH_PASS_API_KEY
+5.JWT_SECRET
+6.MYSQL_PASSWORD
+7.MSQL_DATABASE
+8.MAIL_ID
+```
 <br>
 **Run Command:** *node app.js*<br>
 Navigate To http://localhost:5000 to check the production build
