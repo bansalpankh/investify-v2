@@ -10,6 +10,7 @@ export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
   const [PER, setPER] = useState(null);
   const [volume, setVolume] = useState(null);
+  const [color, setColor] = useState(null);
   const [notInRange,setNotInRange] = useState(true);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
@@ -22,6 +23,7 @@ export default function Charting() {
   const [socket, setSocket] = useState(null);
   const [price, setPrice] = useState('');
   const [qty, setQty] = useState('');
+  const [changePerc, setChangePerc] = useState(null);
 
   useEffect(()=>{
     async function fetchGraph(){
@@ -41,6 +43,11 @@ export default function Charting() {
         // console.log(response.data);
         setMarketValue(response.data.Price);
         setChange(response.data.Change);
+        if (change>=0){
+          setColor('rgb(255,0,0)');
+        } else{
+          setColor('rgb(0,191,166)');
+        }
         setLogo(response.data.logo);
         setUpperCirc(response.data.Upper_Circuit);
         setLowerCirc(response.data.Lower_Circuit);
@@ -62,8 +69,11 @@ export default function Charting() {
         newSocket.emit('joinSharedRoom', shareName);
         // console.log(`Joining room: ${shareName}`);
       }
-      newSocket.on('updateMarketValue',(currentValue)=>{
-        setMarketValue(currentValue);
+      newSocket.on('updateMarketValue',(order)=>{
+        console.log(order);
+        setMarketValue(order.currentValue);
+        setChangePerc(order.changePerc);
+        // setChange(change);
       })
     });
     return () => {
@@ -128,7 +138,7 @@ export default function Charting() {
         label: 'Price Trend',
         data: graphData,
         fill: false,
-        borderColor: 'rgba(0, 176, 80, 1)',
+        borderColor: color,
         borderWidth: 2,
         tension: 0.4,
         pointRadius: 0,
@@ -150,7 +160,7 @@ export default function Charting() {
           <span className="font-roboto whiten text-enlarge mar-bottom">{shareName}</span>
           <div className="primary-flex align-center">
             <span className="font-roboto whiten text-enlarge mar-right">{Marketvalue}</span>
-            <span className="font-roboto active">{`${change} (3.01%)`}</span>
+            <span className={`font-roboto ${change >= 0 ? 'active' : 'loss'}`}>{`${change} (${changePerc}%)`}</span>
           </div>
           <div style={{ height: '200px', width: '100%' }} className="mar-top">
             <Line data={data} options={options} />

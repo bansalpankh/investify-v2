@@ -289,7 +289,10 @@ body{
     /* transition: 2s; */
 }
 .active{
-    color: #00bfa6;
+    color: rgb(0, 191, 166);
+}
+.loss{
+    color: rgb(255, 0, 0);
 }
 .make-active{
     color: #00bfa6;

@@ -102,10 +102,15 @@ export default class OrderBook {
             }
         }
     }
-    getCurrentMarketValue(shareName, uppercirc) {
+    getCurrentMarketValue(shareName, uppercirc, lowercirc) { 
         const lowestSellOrder = this.sellBook.items.find(order => order.share === shareName);
+        const highestBuyOrder = this.buyBook.items.find(order => order.share === shareName);
+        if (!lowestSellOrder && !highestBuyOrder) {
+            return lowercirc;
+        }
         return lowestSellOrder ? lowestSellOrder.price : uppercirc;
-    }    
+    }
+        
 }
 
 // const book = new OrderBook();

@@ -37,6 +37,18 @@ export async function getUpperCircuit(shareName){
     return false;
   }
 }
+
+export async function getLowerCircuit(shareName){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const lowercirc = await collection.findOne({CODE:shareName});
+  if (lowercirc){
+    return lowercirc.Lower_Circuit;
+  }else{
+    return false;
+  }
+}
+
 export async function getShareDetails(shareName){
   const Database = mongoose.connection;
   const collection = Database.collection('Stocks');
@@ -48,10 +60,10 @@ export async function getShareDetails(shareName){
   }
 }
 
-export async function updateIntoMongoDB(shareName, price){
+export async function updateIntoMongoDB(shareName, price, change){
   const Database = mongoose.connection;
   const collection = Database.collection('Stocks');
-  await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price}});
+  await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price, Change:change}});
 }
 
 export async function allStocksToArray(){
@@ -77,6 +89,36 @@ export async function allStocksToArray(){
     }
 }
 
-// console.log(await allStocksToArray());
-// console.log(await findandUpdateUserId("8QeZcVQVFweMLR5T",1200));
-// console.log(await getUpperCircuit("BAJAJHFL"));
+
+// export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares){
+//   const database = mongoose.connection;
+//   const collection = database.collection('users');
+//   try{
+//     const data = await collection.findOne({uuID : userID});
+//     if (data){
+//       data.sharesBought.push({shareName,noOfShares});
+//       console.log("pushed shares")
+//     }else{
+//       console.log("User Not Found");
+//     }
+//   }catch(err){
+//     console.log(err);
+//   }
+// }
+
+
+export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares) {
+  const database = mongoose.connection;
+  const collection = database.collection('users');
+  try {
+    const result = await collection.findOneAndUpdate({ uuID: userID },{ $push: { sharesBought: { shareName, noOfShares } } },{ new: true } );
+    if (result) {
+      console.log("Shares successfully added:", result);
+    } else {
+      console.log("User Not Found");
+    }
+  } catch (err) {
+    console.error("Error while adding shares:", err);
+  }
+}
+// await addUserSharesIntoMongoDB('OLAELEC','rZtkTWsut6CmeJKS',15);
