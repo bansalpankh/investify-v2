@@ -44,9 +44,9 @@ export default function Charting() {
         setMarketValue(response.data.Price);
         setChange(response.data.Change);
         if (change>=0){
-          setColor('rgb(255,0,0)');
-        } else{
           setColor('rgb(0,191,166)');
+        } else{
+          setColor('rgb(255,0,0)');
         }
         setLogo(response.data.logo);
         setUpperCirc(response.data.Upper_Circuit);

@@ -57,13 +57,17 @@ io.on('connection', (socket)=>{
     socket.join(shareName);
   })
   socket.on('buyOrder', async (order)=>{
+    let chgBef = await fetchChangefromDB(order.shareName);
     const upperC = await getUpperCircuit(order.shareName);
     const lowerc = await getLowerCircuit(order.shareName);
+    // will be combined as a single function to reduce wait times in investify-v3
     const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+    // will provide relativly faster load times as written in log(n)
     if (session && session.userId && session.amount>=(order.price*order.qty)){
       session.amount = parseFloat((session.amount - (order.price*order.qty)).toFixed(2));
       Orderbook.addBuyOrder(order.price, order.qty, order.shareName, session.userId);
       const isUpdated = await findandUpdateUserId(session.userId,session.amount);
+      // will be combined with addUserSharesIntoMongoDB
       if (isUpdated){
         await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
         await addUserSharesIntoMongoDB(order.shareName,session.userId,order.qty);
@@ -73,27 +77,38 @@ io.on('connection', (socket)=>{
         console.log("Order Can't Be Placed, Insuffienct Funds");
       }
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
-      const change = parseFloat((currentValue - abs).toFixed(2));
-      const changePerc = parseFloat(((change/abs)*100).toFixed(2));
-      await updateIntoMongoDB(order.shareName,currentValue,change);
+      if (abs == currentValue){
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }else{
+        chgBef = parseFloat((currentValue - abs).toFixed(2));
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }
+      const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
       io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
       console.log('order is not defined for this session');
     }
   })
   socket.on('sellOrder',async (order)=>{
+    let chgBef = await fetchChangefromDB(order.shareName);
     const upperC = await getUpperCircuit(order.shareName);
     const lowerc = await getLowerCircuit(order.shareName);
+    // will be combined as a single function to reduce wait times in investify-v3
     const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+    // will provide relativly faster load times as written in log(n)
     console.log(`upercircuit: ${upperC}, abs: ${abs}`);
     if (session && session.userId){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
-      const change = parseFloat((abs-currentValue).toFixed(2));
-      const changePerc = parseFloat(((change/abs)*100).toFixed(2));
-      await updateIntoMongoDB(order.shareName,currentValue,change);
+      if (abs == currentValue){
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }else{
+        chgBef = parseFloat((currentValue-abs).toFixed(2));
+      }
+      const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
+      await updateIntoMongoDB(order.shareName,currentValue,chgBef);
       io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
       console.log('order is not defined for this session');
@@ -151,7 +166,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const user = new mongoose.model('users', userSchema);
-import { addUserSharesIntoMongoDB, findandUpdateUserId, findUser, getLowerCircuit, getUpperCircuit, updateIntoMongoDB } from './searchIntoUser.js';
+import { addUserSharesIntoMongoDB, fetchChangefromDB, findandUpdateUserId, findUser, getLowerCircuit, getUpperCircuit, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {

@@ -66,6 +66,13 @@ export async function updateIntoMongoDB(shareName, price, change){
   await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price, Change:change}});
 }
 
+export async function fetchChangefromDB(shareName){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const change = await collection.findOne({CODE:shareName});
+  return change.Change;
+}
+
 export async function allStocksToArray(){
   try {
       let arr = [];
@@ -89,24 +96,6 @@ export async function allStocksToArray(){
     }
 }
 
-
-// export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares){
-//   const database = mongoose.connection;
-//   const collection = database.collection('users');
-//   try{
-//     const data = await collection.findOne({uuID : userID});
-//     if (data){
-//       data.sharesBought.push({shareName,noOfShares});
-//       console.log("pushed shares")
-//     }else{
-//       console.log("User Not Found");
-//     }
-//   }catch(err){
-//     console.log(err);
-//   }
-// }
-
-
 export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares) {
   const database = mongoose.connection;
   const collection = database.collection('users');
@@ -121,4 +110,3 @@ export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares) {
     console.error("Error while adding shares:", err);
   }
 }
-// await addUserSharesIntoMongoDB('OLAELEC','rZtkTWsut6CmeJKS',15);
