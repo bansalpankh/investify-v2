@@ -127,4 +127,6 @@ export async function addUserSharesIntoMongoDB(userID,shareName,noOfShares) {
     console.error("Error while adding shares:", err);
   }
 }
+
 // await addUserSharesIntoMongoDB('t1PxjZcTF8ACB0NE','RAMASTEEL',10);
+// console.log(await isShareAvailable('t1PxjZcTF8ACB0NE','IRFC',5));

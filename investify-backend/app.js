@@ -95,9 +95,14 @@ io.on('connection', (socket)=>{
     const lowerc = await getLowerCircuit(order.shareName);
     // will be combined as a single function to reduce wait times in investify-v3
     const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+    const chechShares = await isShareAvailable(session.userId,order.shareName,order.qty);
+    console.log(chechShares);
+    console.log(session.userId);
+    console.log(order.shareName);
+    console.log(order.qty);
     // will provide relativly faster load times as written in log(n)
     console.log(`upercircuit: ${upperC}, abs: ${abs}`);
-    if (session && session.userId){
+    if (session && session.userId && chechShares){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
@@ -166,7 +171,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const user = new mongoose.model('users', userSchema);
-import { addUserSharesIntoMongoDB, fetchChangefromDB, findandUpdateUserId, findUser, getLowerCircuit, getUpperCircuit, updateIntoMongoDB } from './searchIntoUser.js';
+import { addUserSharesIntoMongoDB, fetchChangefromDB, findandUpdateUserId, findUser, getLowerCircuit, getUpperCircuit, isShareAvailable, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {

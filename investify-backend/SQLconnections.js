@@ -65,7 +65,7 @@ export async function addMatchedOrders({ buyID, sellID, price, qty,shareName ,da
             return;
         }
         // console.log(result);
-        console.log("1 Row Inserted");
+        // console.log("1 Row Inserted");
     });
 }
 
@@ -78,7 +78,7 @@ export async function stockPriceUpdateMain(){
     connection.query(query, values,function (err,result){
         if (err) throw err;
         // console.log(result);
-        console.log('38 rows inserted');
+        // console.log('38 rows inserted');
     });
 }
 
