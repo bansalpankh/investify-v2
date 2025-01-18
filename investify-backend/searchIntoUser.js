@@ -159,6 +159,3 @@ export async function isShareAvailable(userID, shareName, qty) {
     return false;
   }
 }
-
-// await addUserSharesIntoMongoDB('t1PxjZcTF8ACB0NE','RAMASTEEL',10);
-// console.log(await isShareAvailable('t1PxjZcTF8ACB0NE','IRFC',5));

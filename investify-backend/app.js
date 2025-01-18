@@ -52,7 +52,7 @@ io.engine.use(sessionMiddleware);
 const Orderbook = new OrderBook();
 io.on('connection', (socket)=>{
   const session = socket.request.session;
-  console.log('User Connected on Investify');
+  // console.log('User Connected on Investify');
   socket.on('joinSharedRoom',(shareName)=>{
     socket.join(shareName);
   })
@@ -96,12 +96,12 @@ io.on('connection', (socket)=>{
     // will be combined as a single function to reduce wait times in investify-v3
     const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
     const chechShares = await isShareAvailable(session.userId,order.shareName,order.qty);
-    console.log(chechShares);
-    console.log(session.userId);
-    console.log(order.shareName);
-    console.log(order.qty);
+    // console.log(chechShares);
+    // console.log(session.userId);
+    // console.log(order.shareName);
+    // console.log(order.qty);
     // will provide relativly faster load times as written in log(n)
-    console.log(`upercircuit: ${upperC}, abs: ${abs}`);
+    // console.log(`upercircuit: ${upperC}, abs: ${abs}`);
     if (session && session.userId && chechShares){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
@@ -183,7 +183,7 @@ app.post('/verify-otp', async (req, res) => {
         req.session.userId = user_.uuID;
         req.session.amount = user_.amount;
         res.status(200).send({ "success": true });
-        console.log(req.session);
+        // console.log(req.session);
       } else {
         const body = { userId: req.body.email, KYC: true, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 60000000, sharesBought: [] };
         req.session.amount = body.amount;
@@ -247,13 +247,13 @@ app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)
 
 app.get('/api/user/totalInvestments', authetication, async (req, res) => {
   try {
-    console.log('User session:', req.session);
+    // console.log('User session:', req.session);
     if (!req.session.userId) {
-      console.log('No user logged in.');
+      // console.log('No user logged in.');
       return res.status(401).send('Unauthorized');
     }
     const data = await getUserTotalInvestment(req.session.userId);
-    console.log('Total investment:', data);
+    // console.log('Total investment:', data);
     res.status(200).send(data.toString());
   } catch (err) {
     console.error('Backend error:', err);
