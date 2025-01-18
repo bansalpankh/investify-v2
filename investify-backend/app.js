@@ -70,7 +70,7 @@ io.on('connection', (socket)=>{
       // will be combined with addUserSharesIntoMongoDB
       if (isUpdated){
         await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
-        await addUserSharesIntoMongoDB(order.shareName,session.userId,order.qty);
+        await addUserSharesIntoMongoDB(session.userId,order.shareName,order.qty);
         Orderbook.matchOrders();
       }
       if (!isUpdated){

@@ -96,13 +96,30 @@ export async function allStocksToArray(){
     }
 }
 
-export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares) {
+export async function addUserSharesIntoMongoDB(userID,shareName,noOfShares) {
   const database = mongoose.connection;
   const collection = database.collection('users');
   try {
-    const result = await collection.findOneAndUpdate({ uuID: userID },{ $push: { sharesBought: { shareName, noOfShares } } },{ new: true } );
+    // const result = await collection.findOneAndUpdate({ uuID: userID },{ $push: { sharesBought: { shareName, noOfShares } } },{ new: true } );
+    const result = await collection.findOne({uuID:userID});
     if (result) {
-      console.log("Shares successfully added:", result);
+      console.log(result.sharesBought);
+      let alreadyAdded = 0;
+      for (let i=0; i<result.sharesBought.length; i++){
+        if(result.sharesBought[i].shareName == shareName){
+          result.sharesBought[i].noOfShares = parseInt(noOfShares)+parseInt(result.sharesBought[i].noOfShares);
+          alreadyAdded = 1;
+        }
+      }
+      if (alreadyAdded == 0){
+        result.sharesBought.push({shareName,noOfShares});
+      }
+      console.log(result.sharesBought);
+      try{
+        await collection.updateOne({uuID:userID},{$set:{sharesBought:result.sharesBought}});
+      }catch(err){
+        console.log(err);
+      }
     } else {
       console.log("User Not Found");
     }
@@ -110,3 +127,4 @@ export async function addUserSharesIntoMongoDB(shareName, userID, noOfShares) {
     console.error("Error while adding shares:", err);
   }
 }
+// await addUserSharesIntoMongoDB('t1PxjZcTF8ACB0NE','RAMASTEEL',10);
