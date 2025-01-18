@@ -128,5 +128,37 @@ export async function addUserSharesIntoMongoDB(userID,shareName,noOfShares) {
   }
 }
 
+export async function isShareAvailable(userID, shareName, qty) {
+  const Database = mongoose.connection;
+  const collection = Database.collection('users');
+  try {
+    const result = await collection.findOne({ uuID: userID });
+    if (!result || !result.sharesBought) {
+      console.log("User or shares not found");
+      return false;
+    }
+    for (let i = 0; i < result.sharesBought.length; i++) {
+      const share = result.sharesBought[i];
+      if (share.shareName === shareName && share.noOfShares >= qty) {
+        share.noOfShares -= qty; 
+        try {
+          await collection.updateOne(
+            { uuID: userID },
+            { $set: { sharesBought: result.sharesBought } }
+          );
+          return true; 
+        } catch (updateErr) {
+          console.log("Error updating shares:", updateErr);
+          return false;
+        }
+      }
+    }
+    return false; 
+  } catch (err) {
+    console.log("Error fetching user:", err);
+    return false;
+  }
+}
+
 // await addUserSharesIntoMongoDB('t1PxjZcTF8ACB0NE','RAMASTEEL',10);
 // console.log(await isShareAvailable('t1PxjZcTF8ACB0NE','IRFC',5));
