@@ -71,10 +71,12 @@ io.on('connection', (socket)=>{
       if (isUpdated){
         await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
         await addUserSharesIntoMongoDB(session.userId,order.shareName,order.qty);
+        socket.emit('buyOrder',true);
         Orderbook.matchOrders();
       }
       if (!isUpdated){
         console.log("Order Can't Be Placed, Insuffienct Funds");
+        socket.emit('buyOrder',false);
       }
       const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
       if (abs == currentValue){
@@ -109,6 +111,7 @@ io.on('connection', (socket)=>{
       }
       const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
       await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      socket.emit('buyOrder',true);
       io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
       socket.emit('sellOrder',false);

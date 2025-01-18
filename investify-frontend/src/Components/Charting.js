@@ -8,6 +8,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
+  const [tagFailed,setTagFailed] = useState(false);
   const [PER, setPER] = useState(null);
   const [volume, setVolume] = useState(null);
   const [color, setColor] = useState(null);
@@ -74,12 +75,26 @@ export default function Charting() {
       })
       newSocket.on('sellOrder',(response)=>{
         if (response === false){
-          alert('Cannot Process Sell Order');
+          setTagFailed(true);
+          setTagSuccess(false);
+          setTimeout(() => {setTagFailed(false);}, 2000);
+        } 
+        if (response === true){
+          setTagFailed(false);
+          setTagSuccess(true);
+          setTimeout(() => {setTagSuccess(false);}, 2000);
         }
       })
       newSocket.on('buyOrder',(response)=>{
         if (response === false){
-          alert('Cannot Process Sell Order');
+          setTagFailed(true);
+          setTagSuccess(false);
+          setTimeout(() => {setTagFailed(false);}, 2000);
+        } 
+        if (response === true){
+          setTagFailed(false);
+          setTagSuccess(true);
+          setTimeout(() => {setTagSuccess(false);}, 2000);
         }
       })
     });
@@ -95,8 +110,8 @@ export default function Charting() {
         socket.emit('buyOrder', { shareName, price, qty });
         setPrice("");
         setQty('');
-        setTagSuccess(true);
-        setTimeout(() => {setTagSuccess(false);}, 2000);
+        // setTagSuccess(true);
+        // setTimeout(() => {setTagSuccess(false);}, 2000);
         // console.log('Buy order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -124,8 +139,8 @@ export default function Charting() {
         socket.emit('sellOrder', {shareName, price, qty});
         setPrice("");
         setQty('');
-        setTagSuccess(true);
-        setTimeout(() => {setTagSuccess(false);}, 2000);
+        // setTagSuccess(true);
+        // setTimeout(() => {setTagSuccess(false);}, 2000);
         // console.log('Sell order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -202,6 +217,13 @@ export default function Charting() {
             <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
             <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
           </svg>
+        ): tagFailed?(
+          <div class="container">
+            <div class="circle-border"></div>
+            <div class="circle">
+              <div class="error"></div>
+            </div>
+          </div>
         ):(
           <div className="sell-buy-box primary-flex flex-col">
           <div className="price-box">
