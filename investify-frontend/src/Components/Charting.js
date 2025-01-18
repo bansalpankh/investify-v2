@@ -64,16 +64,23 @@ export default function Charting() {
     const newSocket = io('http://localhost:5000');
     setSocket(newSocket);
     newSocket.on('connect', () => {
-      // console.log('Connected to server');
       if (shareName) {
         newSocket.emit('joinSharedRoom', shareName);
-        // console.log(`Joining room: ${shareName}`);
       }
       newSocket.on('updateMarketValue',(order)=>{
         console.log(order);
         setMarketValue(order.currentValue);
         setChangePerc(order.changePerc);
-        // setChange(change);
+      })
+      newSocket.on('sellOrder',(response)=>{
+        if (response === false){
+          alert('Cannot Process Sell Order');
+        }
+      })
+      newSocket.on('buyOrder',(response)=>{
+        if (response === false){
+          alert('Cannot Process Sell Order');
+        }
       })
     });
     return () => {

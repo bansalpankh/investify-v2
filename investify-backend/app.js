@@ -86,6 +86,7 @@ io.on('connection', (socket)=>{
       const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
       io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
+      socket.emit('buyOrder',false);
       console.log('order is not defined for this session');
     }
   })
@@ -96,12 +97,6 @@ io.on('connection', (socket)=>{
     // will be combined as a single function to reduce wait times in investify-v3
     const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
     const chechShares = await isShareAvailable(session.userId,order.shareName,order.qty);
-    // console.log(chechShares);
-    // console.log(session.userId);
-    // console.log(order.shareName);
-    // console.log(order.qty);
-    // will provide relativly faster load times as written in log(n)
-    // console.log(`upercircuit: ${upperC}, abs: ${abs}`);
     if (session && session.userId && chechShares){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
@@ -116,6 +111,7 @@ io.on('connection', (socket)=>{
       await updateIntoMongoDB(order.shareName,currentValue,chgBef);
       io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
+      socket.emit('sellOrder',false);
       console.log('order is not defined for this session');
     }
   })
@@ -260,7 +256,6 @@ app.get('/api/user/totalInvestments', authetication, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 app.get('/api/user/allInvestments',authetication,async(req,res)=>{
   try{
