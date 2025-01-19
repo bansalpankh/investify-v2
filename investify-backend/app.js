@@ -184,7 +184,7 @@ app.post('/verify-otp', async (req, res) => {
         res.status(200).send({ "success": true });
         // console.log(req.session);
       } else {
-        const body = { userId: req.body.email, KYC: true, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 60000000, sharesBought: [] };
+        const body = { userId: req.body.email, KYC: true, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 0, sharesBought: [] };
         req.session.amount = body.amount;
         let saveobj = new user(body);
         saveobj.save().then(() => {
