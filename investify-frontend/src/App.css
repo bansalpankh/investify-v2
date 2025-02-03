@@ -556,70 +556,52 @@ input {
         background-color: #ddd;
     }
 }
-/* from code pen */
-.container {
-    background-color: transparent;
-    height: 440px;
-    width: 275px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 10px 10px rgba(#000, 0.05);
-} 
-.circle,.circle-border {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-} 
-.circle {
-    z-index: 1;
-    position: relative;
-    background: white;
-    transform: scale(1);
-    animation: success-anim 700ms ease;
-} 
-.circle-border {
-    z-index: 0;
-    position: absolute;
-    transform: scale(1.1);
-    animation: circle-anim 400ms ease;
-    background: #f86;	
-} 
-@keyframes success-anim {
-    0% {
-      transform: scale(0);
-    }
-    30% {
-      transform: scale(0);
-    }
-    100% {
-      transform: scale(1);
-    }
-} 
-@keyframes circle-anim {
-    from {
-      transform: scale(0);
-    }
-    to {
-      transform: scale(1.1);
-    }
-} 
-.error::before,.error::after {
-    content: "";
-    display: block;
-    height: 4px;
-    background: #f86;
-    position: absolute;
-} 
-.error::before {
-    width: 40px;
-    top: 48%;
-    left: 16%;
-    transform: rotateZ(50deg);
-}
-.error::after {
-    width: 40px;
-    top: 48%;
-    left: 16%;
-    transform: rotateZ(-50deg);
-}
+
+/*Funds Section Styles*/
+
+
+.funds-container {
+    background-color: rgba(0, 0, 0, 0.881);
+    color: white;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  
+  .funds-section {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .funds-button {
+    background-color: #4caf50;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .funds-input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #666;
+    background-color: #2e2e2e;
+    color: white;
+  }
+  
+
+  .funds-add-button {
+    background-color: #757575;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    margin-top: 5px;
+    margin-bottom: 16px;
+  }
+  
