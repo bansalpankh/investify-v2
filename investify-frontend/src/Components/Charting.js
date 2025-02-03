@@ -8,8 +8,10 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 export default function Charting() {
   const [tagSuccess,setTagSuccess] = useState(false);
+  const [tagFailed,setTagFailed] = useState(false);
   const [PER, setPER] = useState(null);
   const [volume, setVolume] = useState(null);
+  const [color, setColor] = useState(null);
   const [notInRange,setNotInRange] = useState(true);
   const { shareName } = useParams();
   const [Marketvalue, setMarketValue] = useState(null);
@@ -22,6 +24,7 @@ export default function Charting() {
   const [socket, setSocket] = useState(null);
   const [price, setPrice] = useState('');
   const [qty, setQty] = useState('');
+  const [changePerc, setChangePerc] = useState(null);
 
   useEffect(()=>{
     async function fetchGraph(){
@@ -41,6 +44,11 @@ export default function Charting() {
         // console.log(response.data);
         setMarketValue(response.data.Price);
         setChange(response.data.Change);
+        if (change>=0){
+          setColor('rgb(0,191,166)');
+        } else{
+          setColor('rgb(255,0,0)');
+        }
         setLogo(response.data.logo);
         setUpperCirc(response.data.Upper_Circuit);
         setLowerCirc(response.data.Lower_Circuit);
@@ -57,13 +65,37 @@ export default function Charting() {
     const newSocket = io('http://localhost:5000');
     setSocket(newSocket);
     newSocket.on('connect', () => {
-      // console.log('Connected to server');
       if (shareName) {
         newSocket.emit('joinSharedRoom', shareName);
-        // console.log(`Joining room: ${shareName}`);
       }
-      newSocket.on('updateMarketValue',(currentValue)=>{
-        setMarketValue(currentValue);
+      newSocket.on('updateMarketValue',(order)=>{
+        console.log(order);
+        setMarketValue(order.currentValue);
+        setChangePerc(order.changePerc);
+      })
+      newSocket.on('sellOrder',(response)=>{
+        if (response === false){
+          setTagFailed(true);
+          setTagSuccess(false);
+          setTimeout(() => {setTagFailed(false);}, 2000);
+        } 
+        if (response === true){
+          setTagFailed(false);
+          setTagSuccess(true);
+          setTimeout(() => {setTagSuccess(false);}, 2000);
+        }
+      })
+      newSocket.on('buyOrder',(response)=>{
+        if (response === false){
+          setTagFailed(true);
+          setTagSuccess(false);
+          setTimeout(() => {setTagFailed(false);}, 2000);
+        } 
+        if (response === true){
+          setTagFailed(false);
+          setTagSuccess(true);
+          setTimeout(() => {setTagSuccess(false);}, 2000);
+        }
       })
     });
     return () => {
@@ -78,8 +110,8 @@ export default function Charting() {
         socket.emit('buyOrder', { shareName, price, qty });
         setPrice("");
         setQty('');
-        setTagSuccess(true);
-        setTimeout(() => {setTagSuccess(false);}, 2000);
+        // setTagSuccess(true);
+        // setTimeout(() => {setTagSuccess(false);}, 2000);
         // console.log('Buy order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -107,8 +139,8 @@ export default function Charting() {
         socket.emit('sellOrder', {shareName, price, qty});
         setPrice("");
         setQty('');
-        setTagSuccess(true);
-        setTimeout(() => {setTagSuccess(false);}, 2000);
+        // setTagSuccess(true);
+        // setTimeout(() => {setTagSuccess(false);}, 2000);
         // console.log('Sell order submitted:', { shareName, price, qty });
       } else {
         console.error('Invalid input or socket not connected.');
@@ -128,7 +160,7 @@ export default function Charting() {
         label: 'Price Trend',
         data: graphData,
         fill: false,
-        borderColor: 'rgba(0, 176, 80, 1)',
+        borderColor: color,
         borderWidth: 2,
         tension: 0.4,
         pointRadius: 0,
@@ -150,7 +182,7 @@ export default function Charting() {
           <span className="font-roboto whiten text-enlarge mar-bottom">{shareName}</span>
           <div className="primary-flex align-center">
             <span className="font-roboto whiten text-enlarge mar-right">{Marketvalue}</span>
-            <span className="font-roboto active">{`${change} (3.01%)`}</span>
+            <span className={`font-roboto ${change >= 0 ? 'active' : 'loss'}`}>{`${change} (${changePerc}%)`}</span>
           </div>
           <div style={{ height: '200px', width: '100%' }} className="mar-top">
             <Line data={data} options={options} />
@@ -181,10 +213,19 @@ export default function Charting() {
 
       <div className="float-35 primary-flex flex-col align-center">
         {tagSuccess?(
-          <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+          <div className='container'>
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
             <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
           </svg>
+          </div>
+        ): tagFailed?(
+          <div class="container">
+            <div class="circle-border"></div>
+            <div class="circle">
+              <div class="error"></div>
+            </div>
+          </div>
         ):(
           <div className="sell-buy-box primary-flex flex-col">
           <div className="price-box">

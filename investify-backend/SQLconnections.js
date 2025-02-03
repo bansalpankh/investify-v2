@@ -11,10 +11,10 @@ const connection = mysql.createConnection({
 
 connection.connect((err)=>{
     if (err){
-        console.log('Connection Not Sucessfull');
+        // console.log('Connection Not Sucessfull');
         return;
     }
-    console.log("Connected to MySQL");
+    // console.log("Connected to MySQL");
 })
 
 function createTableOrders(tableName){
@@ -23,7 +23,7 @@ function createTableOrders(tableName){
         if (err){
             throw err;
         }
-        console.log(result);
+        // console.log(result);
         console.log("1 Result Inserted");
     })
 }
@@ -32,7 +32,7 @@ function createMatchedTable(tableName){
     const query = `Create table ${tableName} (buyID varchar(16), sellID varchar(16), price decimal(8,2), qty int, date_of_order date)`;
     connection.query(query, function(err, result){
         if (err) throw err;
-        console.log(result);
+        // console.log(result);
         console.log("Success");
     })
 }
@@ -41,7 +41,7 @@ function createPriceTable(tableName){
     const query = `Create table ${tableName} (price decimal(8,2), shareName varchar(25), date_of_record date,time_of_record time)`;
     connection.query(query, function(err,result){
         if (err) throw err;
-        console.log(result);
+        // console.log(result);
         console.log("Sucess");
     })
 }
@@ -51,7 +51,7 @@ export async function addOrderIntoDatabase(buyOrSell, shareName, price, qty, use
     const values = [buyOrSell, shareName, price, qty, userID, date_of_order];
     connection.query(query, values, function(err, result) {
         if (err) throw err;
-        console.log(result);
+        // console.log(result);
         console.log("1 Row Inserted");
     });
 }
@@ -61,11 +61,11 @@ export async function addMatchedOrders({ buyID, sellID, price, qty,shareName ,da
     const values = [buyID, sellID, price, qty, shareName,date_of_orders];
     connection.query(query, values, function (err, result) {
         if (err) {
-            console.error("Error inserting matched order:", err);
+            // console.error("Error inserting matched order:", err);
             return;
         }
-        console.log(result);
-        console.log("1 Row Inserted");
+        // console.log(result);
+        // console.log("1 Row Inserted");
     });
 }
 
@@ -77,8 +77,8 @@ export async function stockPriceUpdateMain(){
     const values = arrayI;
     connection.query(query, values,function (err,result){
         if (err) throw err;
-        console.log(result);
-        console.log('50 rows inserted');
+        // console.log(result);
+        // console.log('38 rows inserted');
     });
 }
 

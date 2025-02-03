@@ -37,6 +37,18 @@ export async function getUpperCircuit(shareName){
     return false;
   }
 }
+
+export async function getLowerCircuit(shareName){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const lowercirc = await collection.findOne({CODE:shareName});
+  if (lowercirc){
+    return lowercirc.Lower_Circuit;
+  }else{
+    return false;
+  }
+}
+
 export async function getShareDetails(shareName){
   const Database = mongoose.connection;
   const collection = Database.collection('Stocks');
@@ -48,10 +60,17 @@ export async function getShareDetails(shareName){
   }
 }
 
-export async function updateIntoMongoDB(shareName, price){
+export async function updateIntoMongoDB(shareName, price, change){
   const Database = mongoose.connection;
   const collection = Database.collection('Stocks');
-  await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price}});
+  await collection.findOneAndUpdate({CODE:shareName},{$set:{Price:price, Change:change}});
+}
+
+export async function fetchChangefromDB(shareName){
+  const Database = mongoose.connection;
+  const collection = Database.collection('Stocks');
+  const change = await collection.findOne({CODE:shareName});
+  return change.Change;
 }
 
 export async function allStocksToArray(){
@@ -77,6 +96,66 @@ export async function allStocksToArray(){
     }
 }
 
-// console.log(await allStocksToArray());
-// console.log(await findandUpdateUserId("8QeZcVQVFweMLR5T",1200));
-// console.log(await getUpperCircuit("BAJAJHFL"));
+export async function addUserSharesIntoMongoDB(userID,shareName,noOfShares) {
+  const database = mongoose.connection;
+  const collection = database.collection('users');
+  try {
+    // const result = await collection.findOneAndUpdate({ uuID: userID },{ $push: { sharesBought: { shareName, noOfShares } } },{ new: true } );
+    const result = await collection.findOne({uuID:userID});
+    if (result) {
+      console.log(result.sharesBought);
+      let alreadyAdded = 0;
+      for (let i=0; i<result.sharesBought.length; i++){
+        if(result.sharesBought[i].shareName == shareName){
+          result.sharesBought[i].noOfShares = parseInt(noOfShares)+parseInt(result.sharesBought[i].noOfShares);
+          alreadyAdded = 1;
+        }
+      }
+      if (alreadyAdded == 0){
+        result.sharesBought.push({shareName,noOfShares});
+      }
+      console.log(result.sharesBought);
+      try{
+        await collection.updateOne({uuID:userID},{$set:{sharesBought:result.sharesBought}});
+      }catch(err){
+        console.log(err);
+      }
+    } else {
+      console.log("User Not Found");
+    }
+  } catch (err) {
+    console.error("Error while adding shares:", err);
+  }
+}
+
+export async function isShareAvailable(userID, shareName, qty) {
+  const Database = mongoose.connection;
+  const collection = Database.collection('users');
+  try {
+    const result = await collection.findOne({ uuID: userID });
+    if (!result || !result.sharesBought) {
+      console.log("User or shares not found");
+      return false;
+    }
+    for (let i = 0; i < result.sharesBought.length; i++) {
+      const share = result.sharesBought[i];
+      if (share.shareName === shareName && share.noOfShares >= qty) {
+        share.noOfShares -= qty; 
+        try {
+          await collection.updateOne(
+            { uuID: userID },
+            { $set: { sharesBought: result.sharesBought } }
+          );
+          return true; 
+        } catch (updateErr) {
+          console.log("Error updating shares:", updateErr);
+          return false;
+        }
+      }
+    }
+    return false; 
+  } catch (err) {
+    console.log("Error fetching user:", err);
+    return false;
+  }
+}

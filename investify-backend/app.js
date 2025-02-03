@@ -52,44 +52,69 @@ io.engine.use(sessionMiddleware);
 const Orderbook = new OrderBook();
 io.on('connection', (socket)=>{
   const session = socket.request.session;
-  console.log('User Connected on Investify');
+  // console.log('User Connected on Investify');
   socket.on('joinSharedRoom',(shareName)=>{
     socket.join(shareName);
-    // console.log(`user joined ${shareName} shared Room`);
   })
   socket.on('buyOrder', async (order)=>{
+    let chgBef = await fetchChangefromDB(order.shareName);
+    const upperC = await getUpperCircuit(order.shareName);
+    const lowerc = await getLowerCircuit(order.shareName);
+    // will be combined as a single function to reduce wait times in investify-v3
+    const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+    // will provide relativly faster load times as written in log(n)
     if (session && session.userId && session.amount>=(order.price*order.qty)){
-      session.amount = session.amount - (order.price*order.qty);
+      session.amount = parseFloat((session.amount - (order.price*order.qty)).toFixed(2));
       Orderbook.addBuyOrder(order.price, order.qty, order.shareName, session.userId);
       const isUpdated = await findandUpdateUserId(session.userId,session.amount);
+      // will be combined with addUserSharesIntoMongoDB
       if (isUpdated){
         await addOrderIntoDatabase("buy",order.shareName,order.price,order.qty,session.userId,getOrderDate());
+        await addUserSharesIntoMongoDB(session.userId,order.shareName,order.qty);
+        socket.emit('buyOrder',true);
         Orderbook.matchOrders();
       }
       if (!isUpdated){
         console.log("Order Can't Be Placed, Insuffienct Funds");
+        socket.emit('buyOrder',false);
       }
-      const upperC = await getUpperCircuit(order.shareName);
-      const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC);
-      await updateIntoMongoDB(order.shareName,currentValue);
-      io.to(order.shareName).emit('updateMarketValue', currentValue);
-      // console.log('Order Added in the buy book');
-      // console.log(Orderbook.buyBook);
+      const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+      if (abs == currentValue){
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }else{
+        chgBef = parseFloat((currentValue - abs).toFixed(2));
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }
+      const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
+      io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
+      socket.emit('buyOrder',false);
       console.log('order is not defined for this session');
     }
   })
   socket.on('sellOrder',async (order)=>{
-    if (session && session.userId){
+    let chgBef = await fetchChangefromDB(order.shareName);
+    const upperC = await getUpperCircuit(order.shareName);
+    const lowerc = await getLowerCircuit(order.shareName);
+    // will be combined as a single function to reduce wait times in investify-v3
+    const abs = await Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+    const chechShares = await isShareAvailable(session.userId,order.shareName,order.qty);
+    if (session && session.userId && chechShares){
       Orderbook.addSellOrder(order.price, order.qty, order.shareName, session.userId);
       await addOrderIntoDatabase("sell",order.shareName,order.price,order.qty,session.userId,getOrderDate());
       Orderbook.matchOrders();
-      const currentValue = Orderbook.getCurrentMarketValue(order.shareName);
-      await updateIntoMongoDB(order.shareName,currentValue);
-      io.to(order.shareName).emit('updateMarketValue', currentValue);
-      // console.log('Order Added in the sell book');
-      // console.log(Orderbook.sellBook);
+      const currentValue = Orderbook.getCurrentMarketValue(order.shareName,upperC,lowerc);
+      if (abs == currentValue){
+        await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      }else{
+        chgBef = parseFloat((currentValue-abs).toFixed(2));
+      }
+      const changePerc = parseFloat(((chgBef/abs)*100).toFixed(2));
+      await updateIntoMongoDB(order.shareName,currentValue,chgBef);
+      socket.emit('buyOrder',true);
+      io.to(order.shareName).emit('updateMarketValue', {currentValue,changePerc});
     } else {
+      socket.emit('sellOrder',false);
       console.log('order is not defined for this session');
     }
   })
@@ -140,10 +165,12 @@ const userSchema = new mongoose.Schema({
   KYC: Boolean,
   uuID: String,
   userName: String,
-  amount: Number
+  amount: Number,
+  sharesBought: Array
 });
+
 const user = new mongoose.model('users', userSchema);
-import { findandUpdateUserId, findUser, getUpperCircuit, updateIntoMongoDB } from './searchIntoUser.js';
+import { addUserSharesIntoMongoDB, fetchChangefromDB, findandUpdateUserId, findUser, getLowerCircuit, getUpperCircuit, isShareAvailable, updateIntoMongoDB } from './searchIntoUser.js';
 import OrderBook from './priorityQueue.js';
 app.post('/verify-otp', async (req, res) => {
   try {
@@ -155,9 +182,10 @@ app.post('/verify-otp', async (req, res) => {
         req.session.userId = user_.uuID;
         req.session.amount = user_.amount;
         res.status(200).send({ "success": true });
-        console.log(req.session);
+        // console.log(req.session);
       } else {
-        const body = { userId: req.body.email, KYC: false, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 0 };
+        const body = { userId: req.body.email, KYC: true, uuID: req.session.userId, userName: req.body.email.slice(0, 4), amount: 0, sharesBought: [] };
+        req.session.amount = body.amount;
         let saveobj = new user(body);
         saveobj.save().then(() => {
           // console.log("saved");
@@ -218,20 +246,19 @@ app.get('/api/invest/equity/getDetails/:shareName',authetication,async (req,res)
 
 app.get('/api/user/totalInvestments', authetication, async (req, res) => {
   try {
-    console.log('User session:', req.session);
+    // console.log('User session:', req.session);
     if (!req.session.userId) {
-      console.log('No user logged in.');
+      // console.log('No user logged in.');
       return res.status(401).send('Unauthorized');
     }
     const data = await getUserTotalInvestment(req.session.userId);
-    console.log('Total investment:', data);
+    // console.log('Total investment:', data);
     res.status(200).send(data.toString());
   } catch (err) {
     console.error('Backend error:', err);
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 app.get('/api/user/allInvestments',authetication,async(req,res)=>{
   try{
