@@ -553,3 +553,52 @@ input {
         background-color: #ddd;
     }
 }
+
+/*Funds Section Styles*/
+
+
+.funds-container {
+    background-color: rgba(0, 0, 0, 0.881);
+    color: white;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  
+  .funds-section {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .funds-button {
+    background-color: #4caf50;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .funds-input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #666;
+    background-color: #2e2e2e;
+    color: white;
+  }
+  
+
+  .funds-add-button {
+    background-color: #757575;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    margin-top: 5px;
+    margin-bottom: 16px;
+  }
+  
