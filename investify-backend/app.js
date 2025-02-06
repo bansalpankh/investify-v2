@@ -29,7 +29,8 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../investify-frontend/build')));
 
 import mongoose from 'mongoose';
-mongoose.connect("mongodb://127.0.0.1:27017/Investify")
+const mongoURI = process.env.MONGO_URI;
+mongoose.connect(mongoURI)
 .then(() => {
   console.log("Connection Succeded");
 }).catch((err) => {
@@ -269,7 +270,7 @@ app.get('/api/user/allInvestments',authetication,async(req,res)=>{
   }catch(err){
     res.status(404).send('Not Found');
   }
-})
+});
 
 app.get('/invest/equity', async (req, res) => {
   if (!req.session.token) {
@@ -287,8 +288,14 @@ app.get('*', (req, res) => {
 });
 
 setInterval(async () => {
-  await stockPriceUpdateMain();
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  if (hours === 10 || (hours === 11 && minutes < 60)) {
+    await stockPriceUpdateMain();
+  }
 }, 60000);
+
 
 const port = process.env.PORT || 5000;
 server.listen(port, () => {

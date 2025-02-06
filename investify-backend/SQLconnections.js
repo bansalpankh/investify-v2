@@ -130,5 +130,3 @@ export async function getUserTotalInvestment(userID) {
     const totalInvestment = userInvestments.reduce((sum, { totalValue }) => sum + totalValue, 0);
     return totalInvestment;
 }
-
-// console.log(await getUserTotalInvestment('8QeZcVQVFweMLR5T'));
